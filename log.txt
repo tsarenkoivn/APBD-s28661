@@ -1,0 +1,48 @@
+commit daebf24697a24453aab34208be22f0843b6d4c7f
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 12 15:13:51 2024 +0100
+
+    deleted the log file
+
+commit 642a6b04c6af3b6ba157056d660338389c51ea6a
+Merge: bb83ea0 8942071
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 12 15:10:39 2024 +0100
+
+    fixed the conflict
+
+commit bb83ea05e7257e7ab722127049cc56a9a9c95262
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 12 15:01:59 2024 +0100
+
+    changed name of the var in main branch
+
+commit 894207171038394cabe909cb8d940577f7bc1a36
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 12 15:00:49 2024 +0100
+
+    changed the name of the variable on the branch
+
+commit b77ec42b87d57b7ad69301302caf487eb0527af3
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 12 14:46:44 2024 +0100
+
+    Feature-max implemented
+
+commit d1fdc7bc66e221caa36ad72242dc0d884f22294f
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 12 14:38:18 2024 +0100
+
+    Feature-average functionality finished
+
+commit e2a7d2cdf972cb142253fa3995cb713867395489
+Author: tsarenkoivn <s28661@pjwstk.edu.pl>
+Date:   Tue Mar 5 14:56:15 2024 +0100
+
+    My first commit
+
+commit e1de53a92410964d87d5564473f7f02d9c2b34fb
+Author: tsarenkoivn <162137146+tsarenkoivn@users.noreply.github.com>
+Date:   Tue Mar 5 14:16:41 2024 +0100
+
+    Initial commit
