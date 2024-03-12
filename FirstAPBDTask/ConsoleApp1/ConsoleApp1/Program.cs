@@ -29,6 +29,7 @@ namespace ConsoleApp1
             }
             int[] arr = {1, 2, 5 , 67, 29, 13};
             Console.WriteLine("average of the {1, 2, 5 , 67, 29, 13}: " + CalculateAverage(arr));
+            Console.WriteLine("max of the {1, 2, 5 , 67, 29, 13}: " + findMax(arr));
             Console.WriteLine("Press any key to exit");
             Console.ReadKey();
         }
@@ -39,6 +40,18 @@ namespace ConsoleApp1
                 sum += i;
             }
             return sum / arr.Length;
+        }
+
+        static int findMax(int[] arr)
+        {
+            int max = 0;
+            foreach (var i in arr)
+            {
+                if (i > max) { 
+                max = i;
+                }
+            }
+            return max;
         }
     }
 }
