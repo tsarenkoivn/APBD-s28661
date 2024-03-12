@@ -11,14 +11,14 @@ namespace ConsoleApp1
         static void Main(string[] args)
         {
             Console.WriteLine("Enter a number: ");
-            if (int.TryParse(Console.ReadLine(), out int result)){
+            if (int.TryParse(Console.ReadLine(), out int result)) {
                 if (result > 0) {
                     Console.WriteLine("The value is bigger than zero");
                 }
                 else if (result < 0) {
                     Console.WriteLine("The value is less than zero");
                 }
-                else if(result == 0)
+                else if (result == 0)
                 {
                     Console.WriteLine("You have entered zero");
                 }
@@ -26,9 +26,19 @@ namespace ConsoleApp1
                 {
                     Console.WriteLine("Invalid input plese enter an integer");
                 }
-                Console.WriteLine("Press any key to exit");
-                Console.ReadKey();
             }
+            int[] arr = {1, 2, 5 , 67, 29, 13};
+            Console.WriteLine("average of the {1, 2, 5 , 67, 29, 13}: " + CalculateAverage(arr));
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey();
+        }
+        static double CalculateAverage(int[] arr) {
+            int sum = 0;
+            foreach(var i in arr)
+            {
+                sum += i;
+            }
+            return sum / arr.Length;
         }
     }
 }
