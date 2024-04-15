@@ -15,15 +15,18 @@ namespace Task4.Controllers
 
         //Retrieve all visits
         [HttpGet]
-        public IActionResult Get => Ok(Visits);
+        public IActionResult Get()
+        {
+            return Ok(Visits);
+        }
 
         //Retrieve visists with specific animal by the Id
         [HttpGet("{animalId}")]
-        public IActionResult Get(Guid id)
+        public IActionResult Get(Guid animalId)
         {
-            var visit = Visits.FirstOrDefault(a => a.animalId == animalID);
+            var visit = Visits.FirstOrDefault(a => a.animalId == animalId);
             if (visit == null) return NotFound();
-            return Ok(Visit);
+            return Ok(visit);
         }
 
         //Add a new visit
@@ -31,15 +34,15 @@ namespace Task4.Controllers
         public IActionResult Post(Visit visit)
         {
             Visits.Add(visit);
-            return CreatedAtAction(nameof(Get), new { id == visit.id }, visit)
+            return Ok(Visits);
         }
 
         //Edit visit
         [HttpPut]
         public IActionResult Put(Guid id, Visit updatedVisit) {
-            var index = animals.FindIndex(a => a.Id == id);
+            var index = Visits.FindIndex(a => a.id == id);
             if (index == -1) return NotFound();
-            animals[index] = updatedAnimal;
+            Visits[index] = updatedVisit;
             return NoContent();
         }
 
@@ -47,9 +50,9 @@ namespace Task4.Controllers
         [HttpDelete]
         public IActionResult Delete(Guid id)
         {
-            var index = animals.FindIndex(a => a.Id == id);
+            var index = Visits.FindIndex(a => a.id == id);
             if (index == -1) return NotFound();
-            animals.RemoveAt(index);
+            Visits.RemoveAt(index);
             return NoContent();
         }
     }

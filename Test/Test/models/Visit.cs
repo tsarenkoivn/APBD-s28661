@@ -7,7 +7,7 @@ namespace Task4.models
         // id of visists [Guid], datesofvisits [DateTime], AnimalId, Description, Price
         public Guid id { get; set; } = Guid.NewGuid();
         public DateTime dateofvisits { get; set; }
-        public Guid animalId { get; set; }
+        public int animalId { get; set; }
         public string descriprtion { get; set; }
         public float price { get; set; }
     }
