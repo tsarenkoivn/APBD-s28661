@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
+using System.Transactions;
 using Task6.Models;
 
 namespace Task6.Controllers
@@ -9,13 +10,16 @@ namespace Task6.Controllers
     [Route("[controller]")]
     public class WarehouseController : ControllerBase
     {
-        private bool ProductExists(SqlConnection mycon, int ProductID) 
+        private bool ProductExists(SqlConnection mycon, int ProductID, SqlTransaction transaction) 
         {
             string query = @"SELECT COUNT(*)
                              FROM Product 
                              WHERE IdProduct = @ProductId";
-            using (SqlCommand myCommand = new SqlCommand(query, mycon))
+            using (transaction)
             {
+                var myCommand = mycon.CreateCommand();
+                myCommand.Transaction = transaction;
+                myCommand.CommandText = query;
                 myCommand.Parameters.AddWithValue("@ProductId", ProductID);
                 int count = (int)myCommand.ExecuteScalar();
                 return count > 0;
@@ -67,21 +71,20 @@ namespace Task6.Controllers
                 var transaction  = mycon.BeginTransaction();
                 try
                 {
-                    if(!ProductExists(mycon, request.ProductId))
+                    if(!ProductExists(mycon, request.ProductId, transaction))
                     {
                         return BadRequest("Product doesn't exist");
                     }
-                    if(!WarehouseExists(mycon, request.WarehouseId))
+                    /*if(!WarehouseExists(mycon, request.WarehouseId))
                     {
                         return BadRequest("Warehouse doesn't exist");
                     }
                     if(!OrderExists(mycon, request.ProductId, request.Amount, request.CreatedAt))
                     {
                         return BadRequest("Order doesn't exist or is already fulfilled");
-                    }
+                    }*/
 
                     int ProductWarehouseId;
-                    string queryPrice = @"SELECT Price FROM Product WHERE IdProduct = @ProductId";
                     using (transaction)
                     {
                         var myCommand = mycon.CreateCommand();
