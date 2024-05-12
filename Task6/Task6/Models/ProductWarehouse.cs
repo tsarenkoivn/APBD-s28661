@@ -2,9 +2,9 @@
 {
     public class ProductWarehouse
     {
-        public int IdProductWarehouse { get; set; }
-        public int IdWarehouse { get; set; }
-        public int ProductID { get; set; }
+        public int ProductWarehouseId { get; set; }
+        public int WarehouseId { get; set; }
+        public int ProductId { get; set; }
         public int IdOrder { get; set; }
         public int Amount { get; set; }
         public int Price { get; set; }
