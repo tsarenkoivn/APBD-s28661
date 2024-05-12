@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq.Expressions;
 using System.Transactions;
+using System.Windows.Input;
 using Task6.Models;
 
 namespace Task6.Controllers
@@ -54,6 +56,57 @@ namespace Task6.Controllers
             }
         }
 
+        private decimal GetPrice(SqlConnection mycon, int ProductId, int Amount, DateTime CreatedAt, SqlTransaction transaction, ProductWarehouseRequest request)
+        {
+            var myCommand = mycon.CreateCommand();
+            myCommand.Transaction = transaction;
+            //Get the price for the later INSERT
+            myCommand.CommandText = @"SELECT Price FROM Product WHERE IdProduct = @ProductId";
+            myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
+            decimal price = Convert.ToDecimal(myCommand.ExecuteScalar()) * request.Amount;
+            return price;
+        }
+
+        private void UpdateOrder(SqlConnection mycon, int ProductId, int Amount, DateTime CreatedAt, SqlTransaction transaction, ProductWarehouseRequest request)
+        {
+            var myCommand = mycon.CreateCommand();
+            myCommand.Transaction = transaction;
+            myCommand.CommandText = @"UPDATE [Order] SET FulfilledAt = GETDATE()
+                                                  WHERE IdProduct = @ProductId AND Amount = @Amount AND CreatedAt < @CreatedAt AND FulfilledAt IS NULL";
+            myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
+            myCommand.Parameters.AddWithValue("@Amount", request.Amount);
+            myCommand.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
+            myCommand.ExecuteNonQuery();
+        }
+
+        private int GetOrderId(SqlConnection mycon, int ProductId, int Amount, DateTime CreatedAt, SqlTransaction transaction, ProductWarehouseRequest request)
+        {
+            var myCommand = mycon.CreateCommand();
+            myCommand.Transaction = transaction;
+            myCommand.CommandText = @"SELECT IdOrder
+                                                WHERE IdProduct = @ProductId AND Amount = @Amount AND CreatedAt < @CreatedAt AND FulfilledAt IS NULL";
+            myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
+            myCommand.Parameters.AddWithValue("@Amount", request.Amount);
+            myCommand.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
+            int OrderId = (int)myCommand.ExecuteScalar();
+            return OrderId;
+        }
+
+        private void InsertProductWarehouse(SqlConnection mycon, int ProductId, int Amount, DateTime CreatedAt, int OrderId, decimal price, SqlTransaction transaction, ProductWarehouseRequest request)
+        {
+            var myCommand = mycon.CreateCommand();
+            myCommand.Transaction = transaction;
+            myCommand.CommandText = @"INSERT INTO Product_Warehouse (IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt)
+                                                  VALUES (@WarehouseId, @ProductId, @OrderId, @Amount, @Price, @CreatedAt)";
+            myCommand.Parameters.AddWithValue("@WarehouseId", request.WarehouseId);
+            myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
+            myCommand.Parameters.AddWithValue("@OrderId", OrderId);
+            myCommand.Parameters.AddWithValue("@Amount", request.Amount);
+            myCommand.Parameters.AddWithValue("@Price", price);
+            myCommand.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
+            myCommand.ExecuteNonQuery();
+        }
+
 
         private readonly string connectionString = "Data Source=db-mssql;Initial Catalog=2019SBD;Integrated Security=True";
 
@@ -89,37 +142,15 @@ namespace Task6.Controllers
                     {
                         var myCommand = mycon.CreateCommand();
                         myCommand.Transaction = transaction;
-                        //Get the price for the later INSERT
-                        myCommand.CommandText = @"SELECT Price FROM Product WHERE IdProduct = @ProductId";
-                        myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
-                        decimal price = Convert.ToDecimal(myCommand.ExecuteScalar()) * request.Amount;
+                        
+                        decimal price = GetPrice(mycon, request.ProductId, request.Amount, request.CreatedAt, transaction, request);
 
-                        //Upadte the order table
-                        myCommand.CommandText = @"UPDATE [Order] SET FulfilledAt = GETDATE()
-                                                  WHERE IdProduct = @ProductId AND Amount = @Amount AND CreatedAt < @CreatedAt AND FulfilledAt IS NULL";
-                        myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
-                        myCommand.Parameters.AddWithValue("@Amount", request.Amount);
-                        myCommand.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
-                        myCommand.ExecuteNonQuery();
+                        UpdateOrder(mycon, request.ProductId, request.Amount, request.CreatedAt, transaction, request);
 
-                        //Get the OrderId
-                        myCommand.CommandText = @"SELECT IdOrder
-                                                WHERE IdProduct = @ProductId AND Amount = @Amount AND CreatedAt < @CreatedAt AND FulfilledAt IS NULL";
-                        myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
-                        myCommand.Parameters.AddWithValue("@Amount", request.Amount);
-                        myCommand.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
-                        int OrderId = (int)myCommand.ExecuteScalar();
+                        int OrderId = GetOrderId(mycon, request.ProductId, request.Amount, request.CreatedAt, transaction, request);
 
                         //Insert into Product_Warehouse
-                        myCommand.CommandText = @"INSERT INTO Product_Warehouse (IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt)
-                                                  VALUES (@WarehouseId, @ProductId, @OrderId, @Amount, @Price, @CreatedAt)";
-                        myCommand.Parameters.AddWithValue("@WarehouseId", request.WarehouseId);
-                        myCommand.Parameters.AddWithValue("@ProductId", request.ProductId);
-                        myCommand.Parameters.AddWithValue("@OrderId", OrderId);
-                        myCommand.Parameters.AddWithValue("@Amount", request.Amount);
-                        myCommand.Parameters.AddWithValue("@Price", price);
-                        myCommand.Parameters.AddWithValue("@CreatedAt", request.CreatedAt);
-                        myCommand.ExecuteNonQuery();
+                        InsertProductWarehouse(mycon, request.ProductId, request.Amount, request.CreatedAt, OrderId, price, transaction, request);
 
                         //Get the latest Product_Warehouse ID
                         myCommand.CommandText = "SELECT IdProductWarehouse FROM Product_Warehouse ORDER BY CreatedAt DESC";
