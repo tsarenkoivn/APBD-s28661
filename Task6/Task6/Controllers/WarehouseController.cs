@@ -31,7 +31,7 @@ namespace Task6.Controllers
                     ProductExists.CommandText = @"SELECT 1 FROM Product WHERE IdProduct = @ProductId";
                     ProductExists.Parameters.AddWithValue("@ProductId", request.ProductId);
 
-                    object result = ProductExists.ExecuteScalar();
+                    object result = ProductExists.ExecuteScalar(); 
 
                     if(result == null || result == DBNull.Value)
                     {
