@@ -3,7 +3,7 @@ using Task9.Models;
 
 namespace Task9.Data
 {
-    public class PrescriptionDbContext:DbContext
+    public class PrescriptionDbContext : DbContext
     {
         public PrescriptionDbContext(DbContextOptions<PrescriptionDbContext> options) : base(options) { }
 
@@ -13,18 +13,14 @@ namespace Task9.Data
         public DbSet<Prescription> Prescriptions { get; set; }
         public DbSet<Prescription_Medicament> Prescription_Medicaments { get; set; }
 
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Prescription_Medicament>()
                       .HasKey(pm => new { pm.IdMedicament, pm.IdPrescription });
 
             modelBuilder.Entity<Prescription>().HasKey(p => p.IdPrescription);
-
             modelBuilder.Entity<Medicament>().HasKey(m => m.IdMedicament);
-
             modelBuilder.Entity<Doctor>().HasKey(d => d.IdDoctor);
-
             modelBuilder.Entity<Patient>().HasKey(p => p.IdPatient);
 
             modelBuilder.Entity<Prescription>()

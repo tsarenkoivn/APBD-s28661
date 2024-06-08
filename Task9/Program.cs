@@ -1,6 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using Task9.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+// Register the PrescriptionDbContext with the DI container
+builder.Services.AddDbContext<PrescriptionDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
