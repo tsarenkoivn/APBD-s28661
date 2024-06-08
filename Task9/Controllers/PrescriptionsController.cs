@@ -25,7 +25,7 @@ namespace Task9.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Prescription>>> GetPrescriptions()
         {
-            return await _context.Prescriptions.ToListAsync();
+            return await _context.Prescriptions.ToListAsync(); 
         }
 
         // GET: api/Prescriptions/5
