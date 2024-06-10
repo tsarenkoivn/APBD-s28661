@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Task9.Data;
 using Task9.Models;
+using Task9.DTO;
+using System.Numerics;
 
 namespace Task9.Controllers
 {
@@ -28,18 +30,27 @@ namespace Task9.Controllers
             return await _context.Prescriptions.ToListAsync(); 
         }
 
+        //for getting the patients
         // GET: api/Prescriptions/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Prescription>> GetPrescription(int id)
+        public async Task<ActionResult<Patient>> GetPatient(int id)
         {
-            var prescription = await _context.Prescriptions.FindAsync(id);
+            var patient = _context.Patients
+                .Include(p => p.Prescriptions)
+                    .ThenInclude(pm => pm.Doctor)
+                .Include(p => p.Prescriptions)
+                    .ThenInclude(p => p.Prescription_Medicaments)
+                        .ThenInclude(pm => pm.Medicament)
+                .FirstOrDefault(p => p.IdPatient == id);
 
-            if (prescription == null)
+            if (patient == null)
             {
-                return NotFound();
+                return BadRequest("Patient doesn't exist");
             }
 
-            return prescription;
+            patient.Prescriptions = patient.Prescriptions.OrderBy(p => p.DueDate).ThenBy(p => p.Date).ToList();
+
+            return Ok(patient);
         }
 
         // PUT: api/Prescriptions/5
@@ -76,12 +87,66 @@ namespace Task9.Controllers
         // POST: api/Prescriptions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Prescription>> PostPrescription(Prescription prescription)
+        public async Task<ActionResult<Prescription>> PostPrescription([FromBody] PrescriptionRequestModel request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var patient = _context.Patients.FirstOrDefault(p => p.IdPatient == request.IdPatient);
+            if (patient == null)
+            {
+                patient = new Patient
+                {
+                    IdPatient = request.IdPatient,
+                    LastName = request.LastName,
+                    Birthdate = request.Birthdate,
+                };
+
+                _context.Patients.Add(patient);
+            }
+
+            if(request.Medicaments.Count > 10)
+            {
+                return BadRequest("A prescription cant include more than 10 medications");
+            }
+            if(request.DueDate < request.Date)
+            {
+                return BadRequest("Due date must be greater or equal to the date");
+            }
+
+            foreach( var medicament in request.Medicaments)
+            {
+                var existingMedication = _context.Medicaments.FirstOrDefault(p => p.IdMedicament == medicament.IdMedicament);
+                if (medicament == null)
+                {
+                    return NotFound($"Medicament {medicament.IdMedicament} wasnt found");
+                }
+            }
+
+            var doctor = _context.Doctors.FirstOrDefault(d => d.IdDoctor == request.IdDoctor);
+
+
+            var prescription = new Prescription 
+            {
+                Date = request.Date,
+                DueDate = request.DueDate,
+                IdDoctor = request.IdDoctor,
+                IdPatient = request.IdPatient,
+                Patient = patient,
+                Doctor = doctor,
+                Prescription_Medicaments = request.Medicaments.Select(m => new Prescription_Medicament
+                {
+                    IdMedicament = m.IdMedicament,
+                    Dose = m.Dose,
+                    Details = m.Details
+                }).ToList()
+            };
             _context.Prescriptions.Add(prescription);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetPrescription", new { id = prescription.IdPrescription }, prescription);
+            return Ok(prescription);
         }
 
         // DELETE: api/Prescriptions/5
